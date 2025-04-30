@@ -91,7 +91,7 @@ stop_redsocks() {
     if iptables -t nat -L REDSOCKS &> /dev/null; then
         iptables -t nat -F REDSOCKS
         iptables -t nat -X REDSOCKS
-        iptables -t nat -D OUTPUT -p tcp -j REDSOCKS
+        iptables -t nat -D OUTPUT -p tcp -j REDSOCKS 2>/dev/null
         echo -e "${GREEN}iptables 规则已清理！${NC}"
     else
         echo -e "${YELLOW}未找到 REDSOCKS 相关的 iptables 规则！${NC}"
@@ -111,8 +111,13 @@ main_menu() {
         echo "2. 关闭 SOCKS5 代理"
         echo "3. 退出"
         echo -e "${GREEN}=============================${NC}"
+        echo "尝试次数：$((attempt+1))/$max_attempts"
         read -p "请选择操作（1-3）：" choice
-        echo "输入值为：'$choice'" # 调试信息
+        echo "调试信息 - 你输入的值为：'$choice'"
+        
+        # 清理输入中的不可见字符（如 \r）
+        choice=$(echo "$choice" | tr -d '\r')
+        echo "调试信息 - 清理后的值为：'$choice'"
         
         case $choice in
             1)
@@ -130,7 +135,7 @@ main_menu() {
                 exit 0
                 ;;
             *)
-                echo -e "${RED}无效选项，请重新选择！（尝试 $((attempt+1))/$max_attempts）${NC}"
+                echo -e "${RED}无效选项，请重新选择！${NC}"
                 sleep 1
                 attempt=$((attempt+1))
                 ;;
@@ -142,4 +147,3 @@ main_menu() {
 
 # 启动主菜单
 main_menu
-
